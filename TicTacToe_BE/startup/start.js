@@ -1,13 +1,19 @@
 const { ApolloServer } = require('apollo-server-express');
+const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
 
+const userSchema = require('../schema/userSchema');
+const gameSchema = require('../schema/gameSchema');
+const userResolver = require('../resolver/userResolver');
+const gameResolver = require('../resolver/gameResolver');
+const createContext = require('./contextApollo');
 
-const userTypeDefs = require('../schema/userSchema');
-const userResolvers = require('../resolver/userResolver');
-
+const typeDefs = mergeTypeDefs([userSchema, gameSchema]);
+const resolvers = mergeResolvers([userResolver, gameResolver]);
 
 const server = new ApolloServer({
-    typeDefs: userTypeDefs,
-    resolvers: userResolvers,
+    typeDefs: typeDefs,
+    resolvers: resolvers,
+    context: createContext,
 });
 
 

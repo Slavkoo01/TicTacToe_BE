@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@graphql-tools/merge": "^9.0.7",
     "apollo-server-express": "^3.13.0",
     "bcrypt": "^5.1.1",
     "config": "^3.3.12",
@@ -9,7 +10,7 @@
     "graphql-http": "^1.22.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "nodemon": "^3.1.5",
+    "nodemon": "^3.1.6",
     "pg": "^8.13.0",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5"
