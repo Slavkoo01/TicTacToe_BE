@@ -1,4 +1,4 @@
-const {Client} = require('pg');
+const { Client } = require('pg');
 const config = require('config');
 
 const host = config.get('DBHost');
@@ -13,16 +13,11 @@ const client = new Client({
     port: port,
     password: password,
     database: database
-})
-
-
+});
 client.connect()
     .then(() => console.log('Connected to the database'))
     .catch(err => console.error('Connection error', err.stack));
 
 
+
 module.exports = client;
-
-
-
-

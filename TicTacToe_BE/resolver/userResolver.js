@@ -1,7 +1,9 @@
 
 const { validateCreateUser } = require('../validation/userValidation');  
+const generateJWToken = require('../Token/generateJWToken');
 const client = require('../startup/db');
 const bcrypt = require('bcrypt');
+
 const saltRounds = 10;
 
 module.exports = {
@@ -16,8 +18,7 @@ module.exports = {
     },
   },
   Mutation: {
-    createUser: async (_, { username, email, password }) => {
-      
+    registerUser: async (_, { username, email, password }) => {
       const { error } = validateCreateUser({ username, email, password });
       if (error) {
         throw new Error(error.details[0].message);
@@ -31,6 +32,29 @@ module.exports = {
       );
 
       return result.rows[0];
+    },
+    loginUser: async (_, { username, password }) => {
+      const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+      const user = result.rows[0];
+
+      if (!user) {
+        throw new Error('Invalid username or password');
+      }
+
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        throw new Error('Invalid username or password');
+      }
+
+      const token = generateJWToken(user);
+      return {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+        },
+      };
     },
   },
 };
