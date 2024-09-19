@@ -1,0 +1,8 @@
+{
+  "jwtPrivateKey": "jwtPrivateKey_",
+  "DBHost": "localhost",
+  "DBPassword": "1808",
+  "DBName": "TicTacToe",
+  "DBUser": "postgres",
+  "DBPort": "5432"
+}
