@@ -15,8 +15,8 @@ module.exports = gql`
     getAllUsers: [User]
   }
     
-  type Mutation {
-      registerUser(username: String!, email: String!, password: String!): User
+    type Mutation {
+      registerUser(username: String!, email: String!, password: String!): AuthPayload
       loginUser(username: String!, password:String!): AuthPayload
   }
 `;

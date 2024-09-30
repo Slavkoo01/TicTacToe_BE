@@ -30,8 +30,21 @@ module.exports = {
         'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
         [username, email, hashedPassword]
       );
-      
-      return result.rows[0];
+
+      const newUser = result.rows[0];
+
+    
+      const token = generateJWToken(newUser);
+
+    
+      return {
+        token,
+        user: {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+        },
+      };
     },
     loginUser: async (_, { username, password }) => {
       const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
