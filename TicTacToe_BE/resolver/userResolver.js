@@ -47,27 +47,32 @@ module.exports = {
       };
     },
     loginUser: async (_, { username, password }) => {
-      const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
-      const user = result.rows[0];
-
-      if (!user) {
-        throw new Error('Invalid username or password');
+      try {
+        const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = result.rows[0];
+        if (!user) {
+          throw new Error('Invalid username or password');
+        }
+    
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+          throw new Error('Invalid username or password');
+        }
+    
+        const token = generateJWToken(user);
+        return {
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+          },
+        };
+      } catch (error) {
+        console.error('Error during loginUser mutation:', error);
+        throw new Error('An error occurred while logging in. Please try again later.');
       }
-
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        throw new Error('Invalid username or password');
-      }
-
-      const token = generateJWToken(user);
-      return {
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-        },
-      };
     },
+    
   },
 };

@@ -10,6 +10,7 @@ module.exports = gql`
   type Query {
     gameHistory(gameId: ID!): [GameHistory]
     userGameHistory(userId: ID!): [GameHistory]
+    getGamesByUsername: [GameHistory!]!
   }
 
   enum GameType {
