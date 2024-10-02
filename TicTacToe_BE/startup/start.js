@@ -1,32 +1,29 @@
-const { ApolloServer } = require('apollo-server-express');
-const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
+const express = require('express');
+const app = express();
+const cors = require('cors');
+const http = require('http');
 
-const userSchema = require('../schema/userSchema');
-const gameSchema = require('../schema/gameSchema');
-const userResolver = require('../resolver/userResolver');
-const gameResolver = require('../resolver/gameResolver');
-const createContext = require('./contextApollo');
+const startApolloServer = require('./apolloServer');
+const initSocketIO = require('./socketIO'); 
 
-const typeDefs = mergeTypeDefs([userSchema, gameSchema]);
-const resolvers = mergeResolvers([userResolver, gameResolver]);
+app.use(cors());
 
-const server = new ApolloServer({
-    typeDefs: typeDefs,
-    resolvers: resolvers,
-    context: createContext,
-});
+async function startServer() {
+try{
 
-
-async function startServer(app) {
-    await server.start();
+  const server = http.createServer(app);
   
-    server.applyMiddleware({ app, path: '/TicTacToe' });
+  await startApolloServer(app); 
   
-    const PORT = process.env.PORT || 4000;
-    app.listen(PORT, () => {
-      console.log(`Server is running at port ${PORT}...`);
-    });
-   
-  }
+  initSocketIO(server); 
+  
+  const PORT = process.env.PORT || 4000;
+  server.listen(PORT, () => {
+    console.log(`Server is running at port ${PORT}...`);
+  });
+} catch (error){
+  console.error('Error starting the server:', error);
+}
+}
 
-  module.exports = startServer;
+module.exports = startServer;
