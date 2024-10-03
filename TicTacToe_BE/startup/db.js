@@ -1,4 +1,4 @@
-const { Client } = require('pg');
+const { Pool } = require('pg');
 const config = require('config');
 
 const host = config.get('DBHost');
@@ -7,17 +7,22 @@ const port = config.get('DBPort');
 const password = config.get('DBPassword');
 const database = config.get('DBName');
 
-const client = new Client({
+
+const pool = new Pool({
     host: host,
     user: user,
     port: port,
     password: password,
     database: database
 });
-client.connect()
-    .then(() => console.log('Connected to the database'))
-    .catch(err => console.error('Connection error', err.stack));
 
 
+pool.on('connect', () => {
+    console.log('Connected to the database');
+});
 
-module.exports = client;
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+});
+
+module.exports = pool;

@@ -1,9 +1,13 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
-const auth = (req) => {
-  const token = req.headers['x-auth-token'];
 
+const getTokenFromHeaders = (req) => {
+  return req.headers['x-auth-token'];
+};
+
+
+const verifyToken = (token) => {
   if (!token) {
     throw new Error('Access denied. No token provided.');
   }
@@ -16,4 +20,14 @@ const auth = (req) => {
   }
 };
 
-module.exports = auth;
+
+const auth = (req) => {
+  const token = getTokenFromHeaders(req);
+  return verifyToken(token);
+};
+
+module.exports = {
+  getTokenFromHeaders,
+  verifyToken,
+  auth,
+};
