@@ -13,10 +13,12 @@ module.exports = {
         // Fetch game history for the user
         const resultQuery = await client.query(
           `
-          SELECT * 
-            FROM game_history
-            WHERE (player1_id = $1 OR player2_id = $1)
-            AND result IS NOT NULL;
+          SELECT *
+          FROM game_history
+          WHERE (player1_id = $1 OR player2_id = $1)
+          AND result IS NOT NULL
+          ORDER BY id ASC;
+
 
         `,
           [user.id]
@@ -57,7 +59,8 @@ module.exports = {
               player2,
               result: history.result,
               game,
-              gameDate: history.game_date
+              gameDate: history.game_date,
+              player1_sign: history.player1_sign
             };
           })
         );

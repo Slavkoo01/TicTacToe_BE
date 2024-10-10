@@ -29,6 +29,7 @@ module.exports = gql`
     result: Int!  # 0 for draw, 1 for player1 win, 2 for player2 win
     game: Game
     gameDate: String
+    player1_sign: String
   }
 
   type Move {
