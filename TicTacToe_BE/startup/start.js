@@ -4,7 +4,7 @@ const cors = require('cors');
 const http = require('http');
 
 const startApolloServer = require('./apolloServer');
-const initSocketIO = require('./socketIO'); 
+const initSocketIO = require('./InitSocketIO'); 
 
 app.use(cors());
 
