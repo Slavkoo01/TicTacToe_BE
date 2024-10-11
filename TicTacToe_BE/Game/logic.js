@@ -208,8 +208,8 @@ const gameHandler = {
       await changeAndUpdateGameStatus(finishedGameStatus, roomId, games, io);
       console.log("WINNNER");
       const player1 = games[roomId].players[0];
-      const result = calculateResult(winner, player1.sign);
-
+      const result = calculateResult(winner, player1Sign);
+      console.log('Result:   ',result);
       await updateResultGameHistory(result, roomId);
       await insertMove(roomId, player.userId, squareIndex);
     } else {
@@ -285,6 +285,40 @@ const gameHandler = {
     } else {
       console.error(`Player ${socket.id} not found in game ${gameId}`);
     }
+  },handlecheckInLobby(socket, { gameId, token }, games, io){
+    const { user } = verifyToken(token);
+
+    if (!user || !user.id) {
+       console.error("Invalid token or user data.");
+      }
+      const gameWithUser = Object.values(games).find(game =>
+        game.players.some(player => player.userId === user.id)
+    );
+  
+      console.log('Checkedaaaaaaaaaaaaaaaaaaa')
+      if (!gameWithUser) {
+          socket.emit('notInLobby');
+      } 
+
+  },
+  handleBussyLobby(socket, { gameId, token }, games, io){
+    const { user } = verifyToken(token);
+
+    if (!user || !user.id) {
+       console.error("Invalid token or user data.");
+       return;
+      }
+      if(!games[gameId]){
+        console.error(`${gameId} doesnt exist!`);
+        return;
+      }
+      
+  
+      console.log('bbbbb')
+      if (games[gameId].players.length < 2) {
+          socket.emit('notBussy');
+      } 
+
   },
   handleDisconnect(socket, games, io) {
     console.log(`User ${socket.id} disconnected`);

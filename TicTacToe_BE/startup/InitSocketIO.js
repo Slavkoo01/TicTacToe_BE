@@ -21,6 +21,8 @@ function initSocketIO(server) {
     socket.on("playWithBot", (data) => gameHandler.playWithBot(socket, data));
     socket.on("leaveRoom", (data) => gameHandler.leaveRoom(socket, data, games, io));
     socket.on("disconnect", () => gameHandler.handleDisconnect(socket, games, io));
+    socket.on("checkInLobby", (data) => gameHandler.handlecheckInLobby(socket, data, games, io));
+    socket.on("bussyLobby", (data) => gameHandler.handleBussyLobby(socket, data, games, io));
   });
 }
 
