@@ -42,8 +42,6 @@ const gameHandler = {
         };
       }
       socket.emit("gameCreated", { ReturnedGameId: gameId });
-      socket.emit("playerAssigned", { sign: player1Sign });
-      socket.emit("changeStatus", { status: pendingGameStatus });
     } catch (error) {
       console.error("Error during game creation:", error);
       socket.emit("error", { message: "Failed to create game" });
@@ -148,13 +146,13 @@ const gameHandler = {
         console.log("Current game for the ID:\n", games[gameId]);
         socket.emit("joinedRoom");
 
-        changeAndUpdateGameStatus(activeGameStatus, gameId, games, io);
         games[gameId].players.forEach((player) => {
-          io.to(player.id).emit("startGame", {
-            squares: games[gameId].squares,
-            xIsNext: games[gameId].xIsNext,
-            sign: player.sign
-          });
+            io.to(player.id).emit("startGame", {
+                squares: games[gameId].squares,
+                xIsNext: games[gameId].xIsNext,
+                sign: player.sign
+            });
+            changeAndUpdateGameStatus(activeGameStatus, gameId, games, io);
         });
         if (reconnecting) {
           io.to(games[roomId].players[0].id).emit("notification", {
@@ -276,7 +274,7 @@ const gameHandler = {
 
         // Inform
         if (remainingPlayer) {
-          io.to(remainingPlayer.id).emit("error", {
+          io.to(remainingPlayer.id).emit("notification", {
             message: "Your opponent has left the game."
           });
           changeAndUpdateGameStatus(pendingGameStatus, gameId, games, io);
@@ -321,7 +319,7 @@ const gameHandler = {
       if (game.status !== finishedGameStatus) {
         const remainingPlayer = game.players[0];
         if (remainingPlayer) {
-          io.to(remainingPlayer.id).emit("error", {
+          io.to(remainingPlayer.id).emit("notification", {
             message: "Your opponent has disconnected from the game."
           });
           changeAndUpdateGameStatus(pendingGameStatus, foundGame, games, io);
