@@ -22,26 +22,42 @@ const gameHandler = {
     try {
       const { user } = verifyToken(token);
       console.log("User authenticated for creation:", user);
-      const gameId = await insertNewGame(user.id, gameType, pendingGameStatus);
-      await insertGameHistory(user.id, null, null, player1Sign, gameId);
-      console.log("Game Created Id:", gameId);
-      if (!games[gameId]) {
-        games[gameId] = {
-          roomId: gameId,
-          squares: Array(9).fill(null),
-          xIsNext: true,
-          status: pendingGameStatus,
-          winner: null,
-          players: [
-            {
-              id: socket.id,
-              sign: player1Sign,
-              userId: user.id
-            }
-          ]
-        };
+
+      const gameWithUser = Object.values(games).find((game) =>
+        game.players.some((player) => player.userId === user.id)
+      );
+
+      console.log("Checking if user is already in a lobby");
+      console.log(gameWithUser);
+
+      if (gameWithUser) {
+        socket.emit("alreadyInLobby");
+      } else {
+        const gameId = await insertNewGame(
+          user.id,
+          gameType,
+          pendingGameStatus
+        );
+        await insertGameHistory(user.id, null, null, player1Sign, gameId);
+        console.log("Game Created Id:", gameId);
+        if (!games[gameId]) {
+          games[gameId] = {
+            roomId: gameId,
+            squares: Array(9).fill(null),
+            xIsNext: true,
+            status: pendingGameStatus,
+            winner: null,
+            players: [
+              {
+                id: socket.id,
+                sign: player1Sign,
+                userId: user.id
+              }
+            ]
+          };
+        }
+        socket.emit("gameCreated", { ReturnedGameId: gameId });
       }
-      socket.emit("gameCreated", { ReturnedGameId: gameId });
     } catch (error) {
       console.error("Error during game creation:", error);
       socket.emit("error", { message: "Failed to create game" });
@@ -147,12 +163,12 @@ const gameHandler = {
         socket.emit("joinedRoom");
 
         games[gameId].players.forEach((player) => {
-            io.to(player.id).emit("startGame", {
-                squares: games[gameId].squares,
-                xIsNext: games[gameId].xIsNext,
-                sign: player.sign
-            });
-            changeAndUpdateGameStatus(activeGameStatus, gameId, games, io);
+          io.to(player.id).emit("startGame", {
+            squares: games[gameId].squares,
+            xIsNext: games[gameId].xIsNext,
+            sign: player.sign
+          });
+          changeAndUpdateGameStatus(activeGameStatus, gameId, games, io);
         });
         if (reconnecting) {
           io.to(games[roomId].players[0].id).emit("notification", {
@@ -209,7 +225,7 @@ const gameHandler = {
       console.log("WINNNER");
       const player1 = games[roomId].players[0];
       const result = calculateResult(winner, player1Sign);
-      console.log('Result:   ',result);
+      console.log("Result:   ", result);
       await updateResultGameHistory(result, roomId);
       await insertMove(roomId, player.userId, squareIndex);
     } else {
@@ -285,40 +301,35 @@ const gameHandler = {
     } else {
       console.error(`Player ${socket.id} not found in game ${gameId}`);
     }
-  },handlecheckInLobby(socket, { gameId, token }, games, io){
-    const { user } = verifyToken(token);
-
-    if (!user || !user.id) {
-       console.error("Invalid token or user data.");
-      }
-      const gameWithUser = Object.values(games).find(game =>
-        game.players.some(player => player.userId === user.id)
-    );
-  
-      console.log('Checkedaaaaaaaaaaaaaaaaaaa')
-      if (!gameWithUser) {
-          socket.emit('notInLobby');
-      } 
-
   },
-  handleBussyLobby(socket, { gameId, token }, games, io){
+
+  async handleBussyLobby(socket, { gameId, token }, games, io) {
     const { user } = verifyToken(token);
 
     if (!user || !user.id) {
-       console.error("Invalid token or user data.");
-       return;
-      }
-      if(!games[gameId]){
-        console.error(`${gameId} doesnt exist!`);
-        return;
-      }
-      
-  
-      console.log('bbbbb')
-      if (games[gameId].players.length < 2) {
-          socket.emit('notBussy');
-      } 
+      console.error("Invalid token or user data.");
+      return;
+    }
+    if (!games[gameId]) {
+      console.error(`${gameId} doesnt exist!`);
+      return;
+    }
+    const gameData = await fetchGame(gameId);
+    if (!gameData) {
+      socket.emit("error", { message: "Game data could not be fetched" });
+      return;
+    }
 
+    if (gameData.player2_id === user.id || gameData.player1_id === user.id) {
+        if(games[gameId].players.length < 2){
+            socket.emit("notBussy");
+            return;
+        }
+    }
+    if (gameData.player2_id === null) {
+      socket.emit("notBussy");
+      return;
+    }
   },
   handleDisconnect(socket, games, io) {
     console.log(`User ${socket.id} disconnected`);
