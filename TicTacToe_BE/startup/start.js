@@ -1,26 +1,29 @@
-const { ApolloServer } = require('apollo-server-express');
+const express = require('express');
+const app = express();
+const cors = require('cors');
+const http = require('http');
 
+const startApolloServer = require('./apolloServer');
+const initSocketIO = require('./InitSocketIO'); 
 
-const userTypeDefs = require('../schema/userSchema');
-const userResolvers = require('../resolver/userResolver');
+app.use(cors());
 
+async function startServer() {
+try{
 
-const server = new ApolloServer({
-    typeDefs: userTypeDefs,
-    resolvers: userResolvers,
-});
-
-
-async function startServer(app) {
-    await server.start();
+  const server = http.createServer(app);
   
-    server.applyMiddleware({ app, path: '/TicTacToe' });
+  await startApolloServer(app); 
   
-    const PORT = process.env.PORT || 4000;
-    app.listen(PORT, () => {
-      console.log(`Server is running at port ${PORT}...`);
-    });
-   
-  }
+  initSocketIO(server); 
+  
+  const PORT = process.env.PORT || 4000;
+  server.listen(PORT, () => {
+    console.log(`Server is running at port ${PORT}...`);
+  });
+} catch (error){
+  console.error('Error starting the server:', error);
+}
+}
 
-  module.exports = startServer;
+module.exports = startServer;

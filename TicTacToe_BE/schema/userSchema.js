@@ -8,15 +8,9 @@ module.exports = gql`
   }
   type AuthPayload {
     token: String!
-  }
-
-  type Query {
-    getUser(id: ID!): User
-    getAllUsers: [User]
-    }
-    
+  } 
     type Mutation {
-      registerUser(username: String!, email: String!, password: String!): User
+      registerUser(username: String!, email: String!, password: String!): AuthPayload
       loginUser(username: String!, password:String!): AuthPayload
   }
 `;
